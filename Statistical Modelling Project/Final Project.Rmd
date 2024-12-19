@@ -1,0 +1,339 @@
+---
+title: "Final Report - MAS8404 - Statistical Learning for Data Science"
+author: "Kaustubh Kulkarni - 230195431"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+## Introduction
+
+In this project, I will analyse the BreastCancer data set which concerns characteristics of breast tissue samples collected from 699 women in Wisconsin using fine needle aspiration cytology (FNAC). There are total 9 different characteristics recorded for each tissue sample scaling from 1 to 10 (1 indicating healthier). I will build classifiers for this data and my goal will be to determine the best classifier among them.
+
+### Data Wrangling
+
+To start with, first I will load the BreastCancer dataset from 'mlbench' package.
+
+```{r}
+library(mlbench)
+library(dplyr)
+library(ggplot2)
+library(leaps)
+library(reshape2)
+library(bestglm)
+library(glmnet)
+library(MASS)
+library(caret)
+library(gridExtra)
+data("BreastCancer")
+breast_cancer_data = BreastCancer
+head(breast_cancer_data)
+```
+
+Above are few rows from the dataset which shows the characteristics I will be working on : ID (Sample Code Number),
+Predictor Variables - 
+Cl.thickness(Clump Thickness), Cell.size(Uniformity of Cell Size), Cell.shape(Uniformity of Cell Shape), Marg.adhesion(Marginal Adhesion), Epith.c.size(Single Epithelial Cell Size), Bare.nuclei(Bare Nuclei), Bl.cromatin(Bland Chromatin), Normal.nucleoli(Normal Nucleoli), Mitoses(Mitoses) and 
+Response Variable - Class.
+The predictor variables are in the form of factors. Before beginning our analysis, I will convert the factor variables into quantitative variables.
+
+```{r}
+predictor_cols = c("Cl.thickness", "Cell.size", "Cell.shape", "Marg.adhesion", "Epith.c.size", "Bare.nuclei", "Bl.cromatin", "Normal.nucleoli", "Mitoses")
+
+for (col in predictor_cols) {
+  breast_cancer_data[[col]] = as.numeric(as.character(breast_cancer_data[[col]]))
+}
+
+str(breast_cancer_data)
+```
+
+### Data Cleaning
+
+Next, the data has some NA values which has to be removed before doing further analysis. Hence, I will be identifying the rows with NA values using is.na() function.
+
+```{r}
+rows_na = which(apply(is.na(breast_cancer_data), 1, any))
+
+rows_missing_data = breast_cancer_data[rows_na, ]
+rows_missing_data
+```
+
+Next, I will remove these rows from our data using na.omit() function. As we can see below, after cleaning the rows have been reduced to 683 from 699 i.e. all the 16 rows are successfully removed from the data.
+
+```{r}
+breast_cancer_data_cleaned = na.omit(breast_cancer_data)
+str(breast_cancer_data_cleaned)
+```
+
+## Exploratory Data Analysis
+
+### Summary - Predictors vs Response Variable
+
+Now, let's understand the data by taking a look at the numerical summary of each column.
+
+```{r}
+summary(breast_cancer_data_cleaned)
+```
+Next, I will explain the relation of few predictor variables with the response variable by visualizing them.
+
+1. Cell thickness against Class:
+
+Fig 1.1 shows that most of the samples having cell thickness greater than 5 belong to malignant class and remaining to benign class.
+            
+2. Cell size against Class:
+
+Fig 1.2 displays a trend of cell size and how the number of benign samples decrease and that of malignant increases as the size of cell increases.
+
+```{r , out.height= "50%", out.width="50%"}
+
+ggplot(breast_cancer_data_cleaned, aes(x = Class, y = Cl.thickness, fill = Class)) +
+  geom_boxplot() +
+  labs(title = "Fig 1.1 Boxplot of Cell thickness, by Class") +
+  theme_bw()
+
+ggplot(breast_cancer_data_cleaned, aes(x = Cell.size, fill = Class)) +
+  geom_bar(position = "dodge") +
+  geom_text(
+    aes(label = stat(count)),
+    stat = "count",
+    position = position_dodge(width = 0.9),
+    vjust = -0.5,
+    size = 3
+    ) +
+  labs(title = "Fig 1.2 Bar plot of Cell size by Class with Counts", x = "Cell Size", y = "Count") +
+  theme_bw()
+
+```
+
+### Summary - Between Predictors
+
+Now, we will understand the relation between the predictors. First we will take a look at the correlation matrix.
+
+```{r}
+predictor_data = breast_cancer_data_cleaned[, predictor_cols]
+correlation_matrix = cor(predictor_data)
+print(correlation_matrix)
+```
+
+To simplify this further, a correlation heatmap is created below showing the relations between the predictors with darker colour is high correlation. One strong insight can be taken that there is a good relation between cell shape and cell size.
+
+```{r}
+ggplot(melt(correlation_matrix), aes(Var1, Var2, fill = value)) +
+  geom_tile() +
+  labs(title = "Fig 1.3 Correlation Heatmap") +
+  scale_fill_gradient(high = "darkblue", low = "skyblue") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Logistic Regression : 
+
+After having a good understanding of the data, the next step is to build the classifiers for our data. Before going further, first, the predictor variables are scaled to support the comparison. After scaling the data looks like this:
+
+```{r}
+y = breast_cancer_data_cleaned$Class
+X_scaled = scale(predictor_data)
+model_ready_data = data.frame(X_scaled, y)
+head(model_ready_data)
+```
+
+In this project, 3 types of classifiers will be built : 
+
+### 1. Subset Selection - 
+
+For subset selection, I will be performing the best subset selection of logistic regression using "bestglm" function. In this, two types of models were computed "AIC" and "BIC". 
+
+```{r}
+best_fit_AIC = bestglm(model_ready_data, family = binomial, IC = "AIC")
+best_fit_BIC = bestglm(model_ready_data, family = binomial, IC = "BIC")
+
+summary(best_fit_AIC)
+summary(best_fit_BIC)
+```
+Next the subset of models are extracted:
+
+1. AIC Subset - 
+
+```{r}
+best_fit_AIC$Subsets
+```
+
+2. BIC Subset - 
+
+```{r}
+best_fit_BIC$Subsets
+```
+The model number with * is the best model suggested by both methods. The number of predictors of best model of each method - 
+
+```{r}
+(best_AIC = best_fit_AIC$ModelReport$Bestk)
+(best_BIC = best_fit_BIC$ModelReport$Bestk)
+```
+
+To best understand this situation, graphs are plotted below as follows : 
+
+```{r, out.height="50%", out.width="50%"}
+p = ncol(model_ready_data) - 1
+
+plot(0:p, best_fit_AIC$Subsets$AIC, type = "b" , xlab = "Number of predictors", ylab = "AIC", main = "Fig 2.1.1 Number of Predictors based on AIC")
+points(best_AIC, best_fit_AIC$Subsets$AIC[best_AIC+1], col="red", pch=16)
+axis(side = 1, at = 0:p)
+
+plot(0:p, best_fit_BIC$Subsets$BIC, type = "b", xlab = "Number of predictors", ylab = "BIC", main = "Fig 2.1.2 Number of Predictors based on BIC")
+points(best_BIC, best_fit_BIC$Subsets$BIC[best_BIC+1], col="red", pch=16)
+axis(side = 1, at = 0:p)
+```
+From the plots above, it can be understood that model with 6 predictors(M6) would be a good compromise as it shows an optimal balance between model complexity and goodness of fit. Hence, in the next step the subset of M6 will be extracted as follows : 
+
+```{r}
+pstar = 6
+
+best_fit_AIC$Subsets[pstar+1, ]
+```
+
+Storing values of each predictor variable of M6 : 
+```{r}
+(indices = as.logical(best_fit_AIC$Subsets[pstar+1, 2:(p+1)]))
+```
+
+Creating dataframe with variables of M6 and response variable and passing them to a new logistic regression model. The extracted subset and their coefficients are as follows : 
+
+```{r}
+model_ready_data_red = data.frame(X_scaled[, indices], y)
+logreg1_fit = glm(y ~ ., data = model_ready_data_red, family = "binomial")
+coef(logreg1_fit)
+```
+### 2. Regularisation Method : LASSO -
+
+Next classifier will be built using one of the regularisation methods - LASSO using the glmnet function. The parameters are tuned into a grid and passed to lambda. The model is visualized which shows the coeffecients of each model against the negative log likelihood function.
+
+```{r}
+grid = 10^seq(1, -3, length.out = 100)
+lasso_fit = glmnet(X_scaled, y, family = "binomial", alpha = 1, lambda = grid )
+
+par(mar = c(5, 5, 4, 2) + 0.1)
+plot(lasso_fit, xvar = "lambda", col=rainbow(p), label = TRUE)
+title(main = "Fig. 2.2.1 LASSO Fit", line = 2)
+
+```
+
+The plot above shows the sequence in which the variables drop out and shrink towards zero. The last one to drop out is the 6th variable i.e. Bare.Nuclei. The sequence of dropping is as follows : 
+Mitoses->Epith.c.size->Marg.adhesion->Normal.nucleoli->Bl.cromatin->Cl.thickness->Cell.size->Cell.Shape->Bare. nuclei
+
+Next, a single value for the tuning parameter is selected using cross-validation function "cv.glmnet"
+
+```{r}
+lasso_cv_fit = cv.glmnet(X_scaled, y, family = "binomial", alpha = 1, standardize = FALSE, lambda = grid, type.measure = "class")
+
+par(mar = c(5, 5, 4, 2) + 0.1)
+plot(lasso_cv_fit)
+title(main = "Fig 2.2.2 Cross validation of LASSO", line = 2)
+
+```
+
+The plot is used to visualize how the test error varies with the tuning parameter. Next, the optimal value for tuning parameter is identified and corresponding parameter estimates are fetched. The optimal value is the minimum value of lambda.
+
+```{r}
+lambda_lasso_min = lasso_cv_fit$lambda.min
+print(paste("Minimum value for lambda ", lambda_lasso_min))
+
+which_lamda_lasso = which(lasso_cv_fit$lambda == lambda_lasso_min)
+print(paste("Row number with least lambda value ", which_lamda_lasso))
+
+coef(lasso_fit, s = lambda_lasso_min)
+
+
+```
+
+As the coefficients shown above the regression coefficients for most of the variables have shinked towards zero. 
+
+### 3. Discriminant Analysis - LDA
+
+The final type of classifier will be built for discriminant analysis and for this LDA model is created. From this model, the parameters like coefficients and the group means of predictor variables are fetched.
+
+```{r}
+(lda_model = lda(y ~ ., data = model_ready_data))
+```
+It can be summarized that : 
+ 
+ - The prior probabilities suggest that the dataset is slightly imbalanced, with more instances of the benign class.
+ - Group means and coefficients suggest that features like Cl.thickness, Cell.size, Cell.shape, Bare.nuclei, etc., have significant contributions to distinguishing between the two classes.
+ - The group means for benign are negative and as that of malignant are positive.
+ - Positive coefficients across all predictors in LD1 indicate that higher values in these predictors generally contribute to the malignant class, while lower values contribute to the benign class.
+
+### Cross Validation
+
+After building all three types of classifiers and extracting the essential parameters from each of them, now cross validation must be done to examine the error rates of each model in order to decide the "best" classifier among them.
+The K-fold method is used for cross validation from the "caret" package. K-fold method randomly divide the data into k folds and compute the average test error obtained by successively holding a single fold back as validation
+data, with the other folds serving as training data. 
+
+K-fold method is used over the validation set method because it provides a better estimate of model performance as it averages results over multiple validations, potentially reducing variability. Also K-fold cross-validation is preferred when the dataset size is limited because it uses the data more effectively for both training and validation.
+
+1. Subset Selection
+
+The function trainControl is used to decide the method (cross-validation) and the number of folds to be performed. Next, the train function is used to fit the model. For subset selection the method for fitting the model is "glm".
+Lastly, the mean test error is calculated by the formula -> (1 - mean(Accuracy)). 
+
+```{r}
+ctrl = trainControl(method = "cv", number = 10)
+
+set.seed(123)
+subset_cv_result = train(y ~ ., data = model_ready_data, method = "glm", family = "binomial", trControl = ctrl)
+
+subset_test_error = 1 - mean(subset_cv_result$results$Accuracy)
+
+print(paste("Test error of subset selection is ", subset_test_error))
+
+```
+
+2. Regularisation method - LASSO
+
+The same method of cross validation is used here like the one used for subset selection except the method parameter in the train function is set to "glmnet". Here we get multiple accuracies as all variables are kept but shrinked to zero as mentioned above while building the LASSO classifier. Hence, the mean of errors is considered. 
+
+```{r}
+lasso_ctrl = trainControl(method = "cv", number = 10)
+
+set.seed(123)
+lasso_cv_result = train(y ~ ., data = model_ready_data, method = "glmnet", trControl = lasso_ctrl)
+lasso_test_error = 1 - mean(lasso_cv_result$results$Accuracy)
+print(paste("Test error of LASSO model is ", lasso_test_error))
+```
+
+3. Discriminant Analysis - LDA
+
+The K - fold cross validation of 10 folds is perfomed for LDA similar to that of LASSO and Subset selection except the method used in train function here is "lda". The mean test error is calculated for the model.
+
+```{r}
+lda_ctrl = trainControl(method = "cv", number = 10)
+
+set.seed(123)
+lda_cv_result = train(y ~ ., data = model_ready_data, method = "lda", trControl = lda_ctrl)
+
+lda_error = 1 - mean(lda_cv_result$results$Accuracy)
+print(paste("Test error of LDA is ", lda_error))
+```
+
+### Conclusion - Best Classifier:
+
+This is the final stage of the project where the best classifier is decided based on the performance metrics of all three models.
+
+```{r}
+subset_accuracy = round(100 * mean(subset_cv_result$results$Accuracy), 2)
+lasso_accuracy = round(100 * mean(lasso_cv_result$results$Accuracy), 2)
+lda_accuracy = round(100 * mean(lda_cv_result$results$Accuracy), 2)
+
+subset_test_percent = round((subset_test_error * 100), 2)
+lasso_test_percent = round((lasso_test_error * 100), 2)
+lda_test_percent = round((lda_error * 100), 2)
+
+performance_table = data.frame(
+  Method = c("Best Subset Selection", "Regression Method - LASSO", "Discriminant Analysis - LDA"),
+  Accuracy = c(subset_accuracy, lasso_accuracy, lda_accuracy),
+  Error_rate = c( subset_test_percent, lasso_test_percent, lda_test_percent)
+)
+print(performance_table)
+```
+The metrics fetched for each classifier above are almost close to each other. But, based on the error rate and accuracy, it can be concluded that "Best Subset Selection" is the best classifier. This classifier does not include all predictor variables, it includes only 6 according to our computation. Having less predictor variables can lower the complexity and can give more significant predictions from the model.
+

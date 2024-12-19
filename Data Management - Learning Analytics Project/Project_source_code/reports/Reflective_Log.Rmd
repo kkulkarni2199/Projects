@@ -1,0 +1,33 @@
+---
+title: "Reflective Log"
+author: "Kaustubh"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Working on the Learning Analytics project provided an immersive experience, utilizing various tools and techniques from the module while navigating through the CRISP-DM framework. The project not only sharpened my technical skills but also improved my approach to problem-solving and project management.
+
+### Tools and Techniques:
+
+Engaging with tools like R for data manipulation and visualization was pivotal. Exploring packages like dplyr and ggplot2 enabled efficient data preprocessing and insightful visualizations. Additionally, employing CRISP-DM's structured approach ensured a systematic progression from data understanding to deriving meaningful insights.
+
+### Approach to Tackling the Module:
+
+Initially, breaking down the project into CRISP-DM phases helped streamline my focus. Defining clear research questions for each cycle guided the analysis and facilitated a more targeted approach to extracting valuable insights from the dataset. Regular reviews of findings aided in refining subsequent analysis, enhancing the overall outcomes.
+
+### Thoughts on Future Approaches:
+
+Reflecting on this project, I recognize the importance of adaptability and flexibility in handling diverse datasets and project scopes. Building upon this experience, I aim to deepen my statistical modelling skills for more advanced analysis. Moreover, I intend to explore machine learning techniques to extract predictive insights from data in future projects.
+
+### Project Completion Reflection:
+
+The completion of this project instilled a sense of accomplishment. It underscored the significance of effective communication in translating technical findings into actionable insights. Presenting the results through concise visualizations and reports emerged as a crucial skill set that I aim to refine further.
+
+### Conclusion:
+
+Overall, the project journey was invaluable in refining technical proficiencies, project management skills, and the ability to extract meaningful insights from data. Moving forward, I am excited about applying these learnings to tackle similar tasks, embracing challenges with a structured approach and a continuous learning mindset.
+

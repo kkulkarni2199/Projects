@@ -1,0 +1,41 @@
+commit 09e0b8f7925c3f37f1a89714e9e6e470a4aab9ba
+Author: Kaustubh <kulkarnikaustubh28@gmail.com>
+Date:   Fri Nov 17 14:44:55 2023 +0000
+
+    Final Edit
+
+commit 6f13a50a9da714083f69c389d04b510a17a6f5ee
+Author: Kaustubh <kulkarnikaustubh28@gmail.com>
+Date:   Fri Nov 17 04:43:39 2023 +0000
+
+    Cached data addded
+
+commit 7c7e509234df858c4293b49fc15350503b1cd7f7
+Author: Kaustubh <kulkarnikaustubh28@gmail.com>
+Date:   Fri Nov 17 04:18:42 2023 +0000
+
+    Reflective Log added
+
+commit 6258a874e487a0f822dfadf2c6b5ef2498528e69
+Author: Kaustubh <kulkarnikaustubh28@gmail.com>
+Date:   Fri Nov 17 03:55:09 2023 +0000
+
+    Cycle 1 and Cycle 2 completed
+
+commit 91022ffd9d65142d86c41bcaf8e2f00e095a9548
+Author: Kaustubh <kulkarnikaustubh28@gmail.com>
+Date:   Fri Nov 3 13:06:22 2023 +0000
+
+    Add data
+
+commit 850d1290704b438182491e00c5d3a3b8624e68c7
+Author: Kaustubh <kulkarnikaustubh28@gmail.com>
+Date:   Fri Nov 3 13:03:33 2023 +0000
+
+    Set up RMarkdown
+
+commit ec4234023de5399cd6326c00f67d8007c55183fc
+Author: Kaustubh <kulkarnikaustubh28@gmail.com>
+Date:   Fri Nov 3 12:46:11 2023 +0000
+
+    Setting up Project Template
