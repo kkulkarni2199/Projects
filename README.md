@@ -1,2 +1,6 @@
 # Projects
-My portfolio
+
+This is a repository of my professional and academic projects. 
+
+
+
