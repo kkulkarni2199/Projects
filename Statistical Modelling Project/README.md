@@ -1,4 +1,4 @@
-# Statistical Learning Project - Classification of Breat Cancer
+# Statistical Learning Project - Classification of Breast Cancer
 
 **This academic project highlights the data analysis and classification of breast cancer using machine learning models. And another objective is to identify the most accurate classifier for the classification process.**
 
