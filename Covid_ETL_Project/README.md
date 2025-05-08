@@ -41,13 +41,29 @@ Automation Flow:
 To run manually:
 ```bash
 python run_etl.py
+```
+
+- Step 5 : Query & Explore
+
+The `query.py` module allows for interactive querying of the SQLite database.
+
+Features:
+- Top 10 countries by people vaccinated
+- Total deaths by country
+- Average new COVID-19 cases
+- Support for custom SQL queries
+
+How to Run:
+```bash
+python etl/query.py
+```
 
 ## Structure
 - `etl/` contains ETL scripts
 - `data/` stores raw CSV files
 - `requirements.txt` lists Python dependencies
 
-### Run Extract
+### Running ETL scripts
 python etl/extract.py
 python etl/transform.py
 python etl/load.py
