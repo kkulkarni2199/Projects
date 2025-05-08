@@ -29,6 +29,18 @@ This project demonstrates an end-to-end ETL (Extract, Transform, Load) data pipe
       people_fully_vaccinated REAL,
       total_tests REAL
   );
+- Step 4: Automation:
+
+The entire ETL pipeline is automated using a `run_etl.py` controller script and Windows Task Scheduler.
+
+Automation Flow:
+- `run_etl.py` sequentially runs: `extract.py` → `transform.py` → `load.py`
+- A batch file (`run_etl.bat`) is created to execute the pipeline
+- Windows Task Scheduler is used to run this batch file on a defined schedule (e.g., daily)
+
+To run manually:
+```bash
+python run_etl.py
 
 ## Structure
 - `etl/` contains ETL scripts
